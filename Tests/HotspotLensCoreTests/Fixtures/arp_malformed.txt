@@ -1,0 +1,6 @@
+this is not a valid arp line at all
+? (not-an-ip) at aa:bb:cc:dd:ee:ff on bridge100 ifscope [ethernet]
+? (192.168.2.9) at zz:zz:zz:zz:zz:zz on bridge100 ifscope [ethernet]
+? (192.168.2.10) at aa:bb:cc:dd:ee on bridge100 ifscope [ethernet]
+
+? (192.168.2.11) at 24:0a:c4:11:22:33 on bridge100 ifscope [ethernet]

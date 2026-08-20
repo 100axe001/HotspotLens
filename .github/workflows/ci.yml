@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core-package:
+    name: Build & test HotspotLensCore (SPM)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+      - name: Swift version
+        run: swift --version
+      - name: Build
+        run: swift build --target HotspotLensCore --target HotspotLensCLI
+      - name: Test
+        run: swift test --target HotspotLensCoreTests
+
+  # The HotspotLens.app and HotspotLensHelper targets require an Xcode
+  # project (generated from project.yml via XcodeGen) plus a signing
+  # identity for the privileged helper's SMAppService registration to make
+  # sense, neither of which a CI runner has by default. That build is
+  # intentionally not wired into CI yet -- see README "Known Limitations".

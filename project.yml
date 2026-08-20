@@ -1,0 +1,115 @@
+# XcodeGen project spec (https://github.com/yonaskolb/XcodeGen).
+#
+# We hand-write this instead of a binary .xcodeproj so it's reviewable and
+# diffable, and because this environment has no Xcode to generate/verify one
+# from. On a Mac with XcodeGen installed:
+#
+#   brew install xcodegen
+#   xcodegen generate
+#   open HotspotLens.xcodeproj
+#
+# See README "Build & Run" for the full first-build checklist (Team ID,
+# bundle IDs, and the CustomSQLiteBuilds-style SQLCipher linking step all
+# need a real Apple Developer identity, which this environment doesn't
+# have).
+
+name: HotspotLens
+options:
+  bundleIdPrefix: com.hotspotlens
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+packages:
+  HotspotLensCore:
+    path: .
+
+targets:
+  HotspotLens:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/HotspotLensApp
+      - path: Helper/Shared
+        group: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hotspotlens.app
+        INFOPLIST_FILE: App/HotspotLensApp/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/HotspotLensApp/HotspotLensApp.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: true
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        SWIFT_VERSION: "5.9"
+    dependencies:
+      - package: HotspotLensCore
+        product: HotspotLensCore
+      - sdk: ServiceManagement.framework
+      - target: HotspotLensHelper
+        embed: false
+        copy:
+          destination: executables
+          subpath: ""
+    postCompileScripts: []
+    # Embeds the helper's Mach-O binary at Contents/MacOS/com.hotspotlens.helper
+    # and its launchd plist at Contents/Library/LaunchDaemons/, matching
+    # BundleProgram in com.hotspotlens.helper.plist. XcodeGen's `copy` build
+    # phase destinations don't include a "LaunchDaemons" preset, so that half
+    # is done via an explicit Copy Files phase below.
+    buildPhases:
+      - copyFiles:
+          name: "Copy Launch Daemon plist"
+          destination: wrapper
+          subpath: Contents/Library/LaunchDaemons
+          files:
+            - Helper/HotspotLensHelper/com.hotspotlens.helper.plist
+
+  HotspotLensHelper:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Helper/HotspotLensHelper
+        excludes:
+          - "*.plist"
+          - "*.entitlements"
+      - path: Helper/Shared
+        group: Shared
+    settings:
+      base:
+        PRODUCT_NAME: com.hotspotlens.helper
+        PRODUCT_BUNDLE_IDENTIFIER: com.hotspotlens.helper
+        INFOPLIST_FILE: Helper/HotspotLensHelper/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Helper/HotspotLensHelper/HotspotLensHelper.entitlements
+        ENABLE_HARDENED_RUNTIME: true
+        SWIFT_VERSION: "5.9"
+        SKIP_INSTALL: true
+    dependencies:
+      - package: HotspotLensCore
+        product: HotspotLensCore
+
+  HotspotLensCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/HotspotLensCoreTests
+    dependencies:
+      - package: HotspotLensCore
+        product: HotspotLensCore
+      - target: HotspotLens
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
+
+schemes:
+  HotspotLens:
+    build:
+      targets:
+        HotspotLens: all
+        HotspotLensHelper: all
+        HotspotLensCoreTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - HotspotLensCoreTests

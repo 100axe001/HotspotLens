@@ -1,0 +1,20 @@
+{
+	ip_address=192.168.2.3
+	hw_address=1,a4:83:e7:12:34:56
+	identifier=1,a483e7123456
+	lease=0x64f1a2b3
+	name=Alexs-iPhone
+}
+{
+	ip_address=192.168.2.5
+	hw_address=1,3c:15:c2:aa:bb:cc
+	identifier=1,3c15c2aabbcc
+	lease=0x64f1a300
+	name=Kitchen-MacBook
+}
+{
+	ip_address=192.168.2.20
+	hw_address=1,8a:3f:19:00:11:22
+	identifier=1,8a3f19001122
+	lease=0x64f1a350
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	Installed by the app inside its own bundle at
+	Contents/Library/LaunchDaemons/com.hotspotlens.helper.plist and
+	registered at runtime via SMAppService.daemon(plistName:), which is
+	what actually asks launchd/SMJobBless-successor infrastructure to
+	approve and load it (System Settings > General > Login Items &
+	Extensions on macOS 13+, since SMAppService replaces the deprecated
+	SMJobBless flow). BundleProgram is relative to the *app* bundle: the
+	helper's Mach-O binary is copied into Contents/MacOS/ alongside the
+	main app executable by the Xcode build (see project.yml).
+	-->
+	<key>Label</key>
+	<string>com.hotspotlens.helper</string>
+	<key>BundleProgram</key>
+	<string>Contents/MacOS/com.hotspotlens.helper</string>
+	<key>MachServices</key>
+	<dict>
+		<key>com.hotspotlens.helper</key>
+		<true/>
+	</dict>
+	<key>ProcessType</key>
+	<string>Adaptive</string>
+</dict>
+</plist>

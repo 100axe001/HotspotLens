@@ -1,0 +1,6 @@
+? (192.168.2.1) at 0:0:0:0:0:0 on bridge100 permanent [ethernet]
+? (192.168.2.3) at a4:83:e7:12:34:56 on bridge100 ifscope [ethernet]
+? (192.168.2.4) at (incomplete) on bridge100 ifscope [ethernet]
+? (192.168.2.5) at 3c:15:c2:aa:bb:cc on bridge100 ifscope [ethernet]
+? (192.168.2.6) at 8a:3f:19:00:11:22 on bridge100 ifscope [ethernet]
+? (192.168.2.255) at ff:ff:ff:ff:ff:ff on bridge100 ifscope [ethernet]
