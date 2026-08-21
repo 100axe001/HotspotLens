@@ -27,7 +27,8 @@ final class DeviceDiscoveryServiceTests: XCTestCase {
             ndpReader: NDPTableReader(shell: shell),
             leaseReader: leaseReader,
             hotspotMonitor: HotspotMonitor(shell: shell),
-            vendorLookup: VendorLookupService(table: ["a4:83:e7": "Apple"])
+            vendorLookup: VendorLookupService(table: ["a4:83:e7": "Apple"]),
+            checkReachability: false
         )
     }
 

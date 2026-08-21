@@ -24,19 +24,22 @@ public struct DeviceDiscoveryService: Sendable {
     private let leaseReader: DHCPLeaseReader
     private let hotspotMonitor: HotspotMonitor
     private let vendorLookup: VendorLookupService?
+    private let checkReachability: Bool
 
     public init(
         arpReader: ARPTableReader = ARPTableReader(),
         ndpReader: NDPTableReader = NDPTableReader(),
         leaseReader: DHCPLeaseReader = DHCPLeaseReader(),
         hotspotMonitor: HotspotMonitor = HotspotMonitor(),
-        vendorLookup: VendorLookupService? = try? VendorLookupService()
+        vendorLookup: VendorLookupService? = try? VendorLookupService(),
+        checkReachability: Bool = true
     ) {
         self.arpReader = arpReader
         self.ndpReader = ndpReader
         self.leaseReader = leaseReader
         self.hotspotMonitor = hotspotMonitor
         self.vendorLookup = vendorLookup
+        self.checkReachability = checkReachability
     }
 
     public func discover() -> DiscoverySnapshot {
@@ -55,9 +58,7 @@ public struct DeviceDiscoveryService: Sendable {
         do {
             let allArp = try arpReader.readEntries()
             if case .active(let iface) = hotspotState {
-                let filtered = allArp.filter { $0.interface == iface }
-                // Fallback to all entries if interface matching yields empty list
-                arpEntries = filtered.isEmpty ? allArp : filtered
+                arpEntries = allArp.filter { $0.interface == iface }
             } else {
                 arpEntries = allArp
             }
@@ -100,11 +101,6 @@ public struct DeviceDiscoveryService: Sendable {
 
         for lease in leases {
             var device = byMAC[lease.mac] ?? makeDevice(mac: lease.mac, sources: [], lastSeen: now)
-            // A lease file entry alone doesn't prove the device is *currently*
-            // connected (leases outlive a session); only fill the IP if ARP
-            // didn't already give us a fresher one, but always record the
-            // hostname since that's harmless, useful metadata regardless of
-            // liveness.
             if device.ipv4 == nil {
                 device.ipv4 = lease.ipv4
             }
@@ -113,13 +109,18 @@ public struct DeviceDiscoveryService: Sendable {
             byMAC[lease.mac] = device
         }
 
-        // A device that only appears via a DHCP lease (no ARP/NDP entry) is
-        // not currently on the bridge -- it's a past lease. Only surface
-        // devices with live-signal evidence (ARP or NDP), excluding the host gateway itself.
+        // Only surface devices actively connected right now (excluding the host gateway)
         let liveDevices = byMAC.values.filter { device in
-            let isLive = device.sources.contains(.arp) || device.sources.contains(.ndp)
             let isSelfGateway = device.ipv4 == "192.168.2.1" || device.mac.description == "00:00:00:00:00:00"
-            return isLive && !isSelfGateway
+            guard !isSelfGateway else { return false }
+
+            let hasLiveSource = device.sources.contains(.arp) || device.sources.contains(.ndp)
+            guard hasLiveSource else { return false }
+
+            if checkReachability, let ip = device.ipv4 {
+                return self.isIPReachable(ip)
+            }
+            return true
         }
 
         return DiscoverySnapshot(
@@ -128,6 +129,22 @@ public struct DeviceDiscoveryService: Sendable {
             takenAt: now,
             warnings: warnings
         )
+    }
+
+    private func isIPReachable(_ ip: String) -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/sbin/ping")
+        process.arguments = ["-c", "1", "-W", "250", ip]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
     }
 
     private func makeDevice(mac: MACAddress, sources: DeviceSources, lastSeen: Date) -> Device {
