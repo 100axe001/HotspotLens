@@ -67,33 +67,44 @@ HotspotLens/
 └── project.yml                  # XcodeGen project blueprint
 ```
 
-## Requirements
+## System Requirements
 
-- **Operating System**: macOS 14.0 (Sonoma) or later
-- **Build Tools**: Xcode 15.0+, Swift 5.9+, XcodeGen (`brew install xcodegen`)
+- **For End-Users**: macOS 14.0 (Sonoma) or later (Zero external dependencies required).
+- **For Developers**: Xcode 15.0+, Swift 5.9+, and XcodeGen (`brew install xcodegen`).
 
-## Build & Installation
+## Installation & Setup
 
-### Option 1: Pre-Built Binary
-1. Download the latest release from [GitHub Releases](https://github.com/100axe001/HotspotLens/releases).
-2. Unzip `HotspotLens-v1.0.0-macOS.zip` and drag `HotspotLens.app` into your `/Applications` directory.
-3. Open `HotspotLens.app`.
+### For End-Users (Recommended)
 
-### Option 2: Build From Source
+No developer tools or terminal commands are needed.
 
-Generate the Xcode project and build the application:
+1. Download **`HotspotLens-v1.0.0-macOS.zip`** from [GitHub Releases](https://github.com/100axe001/HotspotLens/releases).
+2. Double-click the downloaded `.zip` file to extract `HotspotLens.app`.
+3. Drag `HotspotLens.app` into your **Applications** folder.
+4. Open `HotspotLens.app`!
+
+### How to Use
+
+1. **Enable Internet Sharing**: Open **System Settings > General > Sharing** and turn on **Internet Sharing** (Personal Hotspot).
+2. **Connect Devices**: Connect your phone, tablet, or other computers to your Mac's hotspot.
+3. **Monitor Clients**: Click the HotspotLens icon in your macOS Menu Bar to view connected devices, IP addresses, MAC addresses, and hardware vendors.
+4. **Block Devices**: Click **Block** next to any connected device to drop its network traffic via macOS Packet Filter (`pfctl`).
+
+### For Developers (Building From Source)
+
+Generate the Xcode project and build from source:
 
 ```bash
-# Install XcodeGen if not already installed
+# Install XcodeGen
 brew install xcodegen
 
-# Generate Xcode project
+# Generate Xcode project blueprint
 xcodegen generate
 
-# Build the Debug binary
+# Build Debug binary
 xcodebuild -scheme HotspotLens -configuration Debug CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO build
 
-# Launch the compiled app
+# Launch compiled app
 open ~/Library/Developer/Xcode/DerivedData/HotspotLens-*/Build/Products/Debug/HotspotLens.app
 ```
 
