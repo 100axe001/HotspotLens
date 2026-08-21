@@ -178,7 +178,7 @@ final class PrivilegedHelperManager: ObservableObject {
             }
 
             // 2. If sudo -n fails, request admin password ONCE to configure /etc/sudoers.d/hotspotlens for passwordless operation
-            let setupCmd = "mkdir -p /etc/sudoers.d && echo '%admin ALL=(ALL) NOPASSWD: /sbin/pfctl, /bin/mkdir, /bin/cp' > /etc/sudoers.d/hotspotlens && chmod 0440 /etc/sudoers.d/hotspotlens && \(pfCmd)"
+            let setupCmd = "mkdir -p /etc/sudoers.d && echo '%admin ALL=(ALL) NOPASSWD: /sbin/pfctl, /bin/mkdir, /bin/cp, /bin/sh' > /etc/sudoers.d/hotspotlens && chmod 0440 /etc/sudoers.d/hotspotlens && \(pfCmd)"
             let script = "do shell script \"\(setupCmd)\" with administrator privileges"
 
             var errorInfo: NSDictionary?
